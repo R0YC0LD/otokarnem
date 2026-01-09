@@ -4,9 +4,126 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OtoServis Pro - Dijital Araç Karnesi</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--background); color: var(--text-main); line-height: 1.6; padding-bottom: 50px; }
+
+        /* YARDIMCI SINIFLAR */
+        .hidden { display: none !important; }
+        .mt-2 { margin-top: 1rem; }
+        .text-muted { color: var(--text-muted); font-size: 0.9rem; }
+        .text-center { text-align: center; }
+
+        /* NAVBAR */
+        .navbar { background: var(--surface); box-shadow: var(--shadow); padding: 1rem 0; position: sticky; top: 0; z-index: 100; }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .logo { font-size: 1.5rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        .logo i { color: var(--primary); font-size: 1.8rem; }
+        .logo span { color: var(--primary); }
+
+        /* ANA KAPLAYICI */
+        .main-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; min-height: 80vh; }
+        .view { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* KARTLAR VE KUTULAR */
+        .auth-box { background: var(--surface); padding: 2.5rem; border-radius: var(--radius); box-shadow: var(--shadow); max-width: 450px; margin: 0 auto; }
+        .auth-box.wide { max-width: 800px; }
+        .auth-header { text-align: center; margin-bottom: 2rem; }
+        .auth-header h2 { color: var(--primary); margin-bottom: 0.5rem; }
+        .auth-footer { text-align: center; margin-top: 20px; font-size: 0.9rem; }
+        .auth-footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+        /* FORMLAR */
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem; color: var(--text-main); }
+        input, select, textarea { width: 100%; padding: 12px 15px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; transition: all 0.3s; background: #fff; }
+        input:focus, textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .input-icon { position: relative; }
+        .input-icon i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .input-icon input { padding-left: 40px; }
+
+        /* BUTONLAR */
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-block { width: 100%; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; padding: 8px 16px; font-size: 0.9rem; }
+        .btn-outline { border: 1px solid var(--primary); color: var(--primary); background: transparent; padding: 6px 12px; font-size: 0.85rem; }
+        .btn-outline:hover { background: rgba(37, 99, 235, 0.1); }
+
+        /* DASHBOARD */
+        .dashboard-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--surface); padding: 25px; border-radius: var(--radius); box-shadow: var(--shadow); gap: 20px; }
+        .qr-box { text-align: center; background: white; padding: 10px; border-radius: 8px; border: 1px solid var(--border); }
+        .stats-box { display: flex; gap: 20px; }
+        .stat-item { text-align: center; background: var(--background); padding: 10px 20px; border-radius: 8px; min-width: 100px; }
+        .stat-val { display: block; font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+        .stat-label { font-size: 0.8rem; color: var(--text-muted); }
+
+        .content-card { background: var(--surface); padding: 25px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; height: 100%; }
+        .content-card h3 { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px; color: var(--text-main); font-size: 1.2rem; }
+
+        /* TABLO */
+        .table-responsive { overflow-x: auto; }
+        .table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .table th { background-color: #f1f5f9; padding: 15px; text-align: left; font-weight: 600; color: var(--secondary); font-size: 0.9rem; }
+        .table td { padding: 15px; border-bottom: 1px solid var(--border); color: var(--text-main); }
+        
+        /* IZGARA SİSTEMİ */
+        .row { display: flex; gap: 20px; flex-wrap: wrap; }
+        .col { flex: 1; min-width: 300px; }
+        .row-smart { display: flex; gap: 15px; }
+        .row-smart .form-group { flex: 1; }
+        .search-wrapper { display: flex; gap: 10px; }
+        .btn-icon { background: var(--primary); color: white; border: none; border-radius: 8px; width: 50px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* DURUM ROZETLERİ */
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .status-completed { background: #d1fae5; color: #059669; border: 1px solid #a7f3d0; }
+        .status-pending { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+
+        /* MODAL VE TOAST */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(3px); }
+        .modal-content { background: white; padding: 30px; border-radius: var(--radius); width: 90%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: var(--text-muted); }
+        .star-rating { font-size: 2rem; color: #fbbf24; cursor: pointer; margin: 15px 0; }
+
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; }
+        .toast { background: #333; color: white; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; animation: slideIn 0.3s; display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* BOŞ DURUM */
+        .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; opacity: 0.5; color: var(--secondary); }
+
+        @media (max-width: 768px) {
+            .nav-content { flex-direction: column; gap: 10px; }
+            .row-smart { flex-direction: column; gap: 0; }
+            .dashboard-header { flex-direction: column; text-align: center; }
+        }
+    </style>
 </head>
 <body>
 
@@ -15,10 +132,11 @@
     <nav class="navbar">
         <div class="container nav-content">
             <div class="logo">
-                <i class="fa-solid fa-shield-halved"></i> OtoServis<span>Pro</span>
+                <i class="fa-solid fa-car-on"></i> 
+                <div>OtoServis<span>Pro</span></div>
             </div>
             <div class="nav-links">
-                <span id="user-display" class="hidden">Hoşgeldin, Kullanıcı</span>
+                <span id="user-display" class="hidden" style="font-weight: 600; margin-right: 15px; color: var(--text-main);"></span>
                 <button id="logout-btn" class="btn btn-danger hidden"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</button>
             </div>
         </div>
@@ -30,14 +148,14 @@
             <div class="auth-box">
                 <div class="auth-header">
                     <h2>Giriş Yap</h2>
-                    <p>Araç geçmişinize veya servis panelinize erişin.</p>
+                    <p class="text-muted">Servis geçmişinizi görüntüleyin veya yönetin.</p>
                 </div>
                 <form id="login-form">
                     <div class="form-group">
-                        <label>TC Kimlik No veya Kullanıcı ID</label>
+                        <label>TC Kimlik No veya Usta ID</label>
                         <div class="input-icon">
-                            <i class="fa-solid fa-id-card"></i>
-                            <input type="text" id="login-id" placeholder="11 Haneli TC veya Usta ID" required>
+                            <i class="fa-solid fa-user"></i>
+                            <input type="text" id="login-id" placeholder="Örn: 11111111111 veya usta1" required>
                         </div>
                     </div>
                     <div class="form-group">
@@ -47,10 +165,14 @@
                             <input type="password" id="login-pass" placeholder="Şifreniz" required>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-block">Giriş Yap</button>
+                    <button type="submit" class="btn btn-primary btn-block">Güvenli Giriş</button>
                 </form>
                 <div class="auth-footer">
                     Hesabınız yok mu? <a href="#" onclick="app.router('register')">Hemen Kayıt Ol</a>
+                </div>
+                
+                <div class="mt-2 text-center text-muted" style="font-size: 0.8rem; background: #f1f5f9; padding: 10px; border-radius: 8px;">
+                    <strong>Usta Girişi:</strong> usta1 / 123
                 </div>
             </div>
         </section>
@@ -58,13 +180,13 @@
         <section id="view-register" class="view hidden">
             <div class="auth-box wide">
                 <div class="auth-header">
-                    <h2>Yeni Üyelik</h2>
-                    <p>Aracınızı sisteme kaydedin, değerini koruyun.</p>
+                    <h2>Yeni Araç Kaydı</h2>
+                    <p class="text-muted">Aracınızın değerini korumak için ilk adımı atın.</p>
                 </div>
                 <form id="register-form">
                     <div class="row">
                         <div class="col">
-                            <h4>Kişisel Bilgiler</h4>
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">Sürücü Bilgileri</h4>
                             <div class="form-group">
                                 <label>Ad Soyad</label>
                                 <input type="text" id="reg-name" required>
@@ -72,7 +194,6 @@
                             <div class="form-group">
                                 <label>TC Kimlik No</label>
                                 <input type="text" id="reg-tc" maxlength="11" required>
-                                <small>Giriş yapmak için kullanılacaktır.</small>
                             </div>
                             <div class="form-group">
                                 <label>Şifre Belirle</label>
@@ -80,22 +201,22 @@
                             </div>
                         </div>
                         <div class="col">
-                            <h4>Araç Bilgileri</h4>
+                            <h4 style="color: var(--primary); margin-bottom: 15px;">Araç Bilgileri</h4>
                             <div class="form-group">
-                                <label>Plaka</label>
+                                <label>Plaka (Bitişik Yazınız)</label>
                                 <input type="text" id="reg-plate" placeholder="34ABC123" required style="text-transform: uppercase;">
                             </div>
                             <div class="form-group">
                                 <label>Şasi Numarası (VIN)</label>
-                                <input type="text" id="reg-vin" required style="text-transform: uppercase;">
+                                <input type="text" id="reg-vin" placeholder="Örn: NB123..." required style="text-transform: uppercase;">
                             </div>
                             <div class="form-group">
                                 <label>Marka / Model</label>
-                                <input type="text" id="reg-model" placeholder="Örn: Fiat Egea 2021" required>
+                                <input type="text" id="reg-model" placeholder="Örn: Fiat Egea 2022" required>
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-success btn-block mt-2">Kayıt Ol ve Giriş Yap</button>
+                    <button type="submit" class="btn btn-success btn-block mt-2"><i class="fa-solid fa-check"></i> Kaydı Tamamla</button>
                 </form>
                 <div class="auth-footer">
                     Zaten hesabınız var mı? <a href="#" onclick="app.router('login')">Giriş Yap</a>
@@ -106,12 +227,12 @@
         <section id="view-user-dashboard" class="view hidden">
             <div class="dashboard-header">
                 <div>
-                    <h1>Aracım</h1>
-                    <p id="user-car-detail" class="text-muted">Yükleniyor...</p>
+                    <h1 style="font-size: 1.8rem;">Aracım</h1>
+                    <p id="user-car-detail" class="text-muted">Araç bilgileri yükleniyor...</p>
                 </div>
                 <div class="qr-box">
                     <div id="qrcode"></div>
-                    <small>Servis QR Kodu</small>
+                    <small style="display:block; margin-top:5px; font-weight:600;">Servis QR Kodu</small>
                 </div>
             </div>
 
@@ -123,8 +244,7 @@
                             <tr>
                                 <th>Tarih</th>
                                 <th>Servis / Usta</th>
-                                <th>İşlem (KM)</th>
-                                <th>Açıklama</th>
+                                <th>İşlem Detayı (KM)</th>
                                 <th>Durum</th>
                             </tr>
                         </thead>
@@ -133,8 +253,8 @@
                     </table>
                 </div>
                 <div id="user-empty-state" class="empty-state hidden">
-                    <i class="fa-solid fa-folder-open"></i>
-                    <p>Henüz kayıtlı bir servis işleminiz yok.</p>
+                    <i class="fa-regular fa-folder-open"></i>
+                    <p>Henüz kayıtlı bir servis işleminiz bulunmuyor.</p>
                 </div>
             </div>
         </section>
@@ -142,13 +262,13 @@
         <section id="view-master-dashboard" class="view hidden">
             <div class="dashboard-header">
                 <div>
-                    <h1>Usta Paneli</h1>
-                    <p>Yeni servis kaydı girin veya geçmişi sorgulayın.</p>
+                    <h1 style="font-size: 1.8rem;">Usta Paneli</h1>
+                    <p class="text-muted">Servis işlemlerini kaydedin ve yönetin.</p>
                 </div>
                 <div class="stats-box">
                     <div class="stat-item">
                         <span id="master-rating" class="stat-val">0.0</span>
-                        <span class="stat-label">Ort. Puan</span>
+                        <span class="stat-label">Puan</span>
                     </div>
                     <div class="stat-item">
                         <span id="master-count" class="stat-val">0</span>
@@ -160,7 +280,7 @@
             <div class="row">
                 <div class="col">
                     <div class="content-card">
-                        <h3><i class="fa-solid fa-plus-circle"></i> Yeni İşlem Ekle</h3>
+                        <h3><i class="fa-solid fa-screwdriver-wrench"></i> Yeni İşlem Ekle</h3>
                         <form id="service-add-form">
                             <div class="form-group">
                                 <label>Müşteri Plakası</label>
@@ -168,7 +288,7 @@
                                     <input type="text" id="serv-plate" placeholder="34ABC123" required style="text-transform: uppercase;">
                                     <button type="button" class="btn-icon" onclick="app.checkPlate()"><i class="fa-solid fa-magnifying-glass"></i></button>
                                 </div>
-                                <small id="plate-status" class="status-text"></small>
+                                <small id="plate-status" style="display:block; margin-top:5px; font-weight:600;"></small>
                             </div>
                             
                             <div class="row-smart">
@@ -177,14 +297,14 @@
                                     <input type="number" id="serv-km" placeholder="Örn: 120000" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>İşlem Tarihi</label>
+                                    <label>Tarih</label>
                                     <input type="date" id="serv-date" required>
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <label>Yapılan İşlemler</label>
-                                <textarea id="serv-desc" rows="4" placeholder="Detaylı parça ve işçilik bilgisi..." required></textarea>
+                                <textarea id="serv-desc" rows="4" placeholder="Değişen parçalar ve işlem detayları..." required></textarea>
                             </div>
 
                             <button type="submit" class="btn btn-primary btn-block">Kaydı İşle</button>
@@ -194,8 +314,8 @@
 
                 <div class="col">
                     <div class="content-card">
-                        <h3><i class="fa-solid fa-list-check"></i> Son Yaptığım İşlemler</h3>
-                        <ul class="recent-list" id="master-recent-list">
+                        <h3><i class="fa-solid fa-list-check"></i> Son İşlemlerim</h3>
+                        <ul id="master-recent-list" style="list-style: none;">
                             </ul>
                     </div>
                 </div>
@@ -208,7 +328,7 @@
         <div class="modal-content">
             <span class="close-modal" onclick="app.closeModal()">&times;</span>
             <h3>Hizmeti Değerlendir</h3>
-            <p>Aldığınız hizmeti puanlayın ve yorum yapın.</p>
+            <p class="text-muted">Bu servis işleminden ne kadar memnun kaldınız?</p>
             <div class="star-rating">
                 <i class="fa-regular fa-star" data-val="1"></i>
                 <i class="fa-regular fa-star" data-val="2"></i>
@@ -216,12 +336,394 @@
                 <i class="fa-regular fa-star" data-val="4"></i>
                 <i class="fa-regular fa-star" data-val="5"></i>
             </div>
-            <textarea id="rate-comment" placeholder="Yorumunuz..." class="mt-2"></textarea>
+            <textarea id="rate-comment" placeholder="Yorumunuzu yazın (Opsiyonel)" rows="3"></textarea>
             <button id="btn-submit-rate" class="btn btn-success btn-block mt-2">Gönder</button>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="app.js"></script>
+    
+    <script>
+        /**
+         * OtoServis Pro - Tek Dosya JS Mantığı
+         */
+        class App {
+            constructor() {
+                this.DB_KEY = 'otoServisPro_DB_v2';
+                this.currentUser = null;
+                this.currentView = 'view-login';
+                this.db = this.loadDB();
+                
+                // Sayfa yüklendiğinde çalışacaklar
+                this.initEvents();
+                this.checkSession();
+            }
+
+            // --- VERİTABANI İŞLEMLERİ ---
+            loadDB() {
+                const stored = localStorage.getItem(this.DB_KEY);
+                if (stored) return JSON.parse(stored);
+                
+                // İlk kurulum verileri
+                const seedData = {
+                    users: [],
+                    masters: [
+                        { 
+                            id: '1', 
+                            username: 'usta1', 
+                            password: '123', 
+                            name: 'Mehmet Usta', 
+                            shopName: 'Güven Oto Performans',
+                            rating: 4.8,
+                            ratingCount: 12
+                        }
+                    ],
+                    services: []
+                };
+                this.saveDB(seedData);
+                return seedData;
+            }
+
+            saveDB(data) {
+                localStorage.setItem(this.DB_KEY, JSON.stringify(data));
+                this.db = data;
+            }
+
+            // --- YÖNLENDİRME (ROUTER) ---
+            router(viewName) {
+                // Hepsini gizle
+                document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
+                
+                // İsteneni aç
+                const target = document.getElementById(`view-${viewName}`);
+                if (target) {
+                    target.classList.remove('hidden');
+                    this.currentView = viewName;
+                }
+
+                if (viewName === 'user-dashboard') this.loadUserDashboard();
+                if (viewName === 'master-dashboard') this.loadMasterDashboard();
+            }
+
+            // --- OTURUM ---
+            checkSession() {
+                const sessionUser = sessionStorage.getItem('currentUser');
+                if (sessionUser) {
+                    this.currentUser = JSON.parse(sessionUser);
+                    this.updateNavbar();
+                    if (this.currentUser.role === 'master') {
+                        this.router('master-dashboard');
+                    } else {
+                        this.router('user-dashboard');
+                    }
+                } else {
+                    this.router('login');
+                }
+            }
+
+            login(id, password) {
+                // Usta mı?
+                const master = this.db.masters.find(m => (m.username === id || m.id === id) && m.password === password);
+                if (master) {
+                    this.setSession(master, 'master');
+                    this.showToast('Usta girişi başarılı.', 'success');
+                    return;
+                }
+
+                // Kullanıcı mı?
+                const user = this.db.users.find(u => u.tc === id && u.password === password);
+                if (user) {
+                    this.setSession(user, 'user');
+                    this.showToast('Giriş başarılı.', 'success');
+                    return;
+                }
+
+                this.showToast('Hatalı bilgiler!', 'error');
+            }
+
+            register(data) {
+                if (this.db.users.find(u => u.tc === data.tc)) {
+                    this.showToast('Bu TC zaten kayıtlı.', 'error');
+                    return;
+                }
+                if (this.db.users.find(u => u.plate === data.plate)) {
+                    this.showToast('Bu plaka zaten kayıtlı.', 'error');
+                    return;
+                }
+
+                const newUser = {
+                    id: 'u_' + Date.now(),
+                    role: 'user',
+                    name: data.name,
+                    tc: data.tc,
+                    password: data.password,
+                    plate: data.plate,
+                    vin: data.vin,
+                    model: data.model,
+                    createdAt: new Date().toISOString()
+                };
+
+                this.db.users.push(newUser);
+                this.saveDB(this.db);
+                this.showToast('Kayıt tamamlandı! Giriş yapılıyor...', 'success');
+                setTimeout(() => this.setSession(newUser, 'user'), 1000);
+            }
+
+            setSession(user, role) {
+                const sessionData = { ...user, role };
+                sessionStorage.setItem('currentUser', JSON.stringify(sessionData));
+                this.currentUser = sessionData;
+                this.updateNavbar();
+                
+                if (role === 'master') this.router('master-dashboard');
+                else this.router('user-dashboard');
+            }
+
+            logout() {
+                sessionStorage.removeItem('currentUser');
+                this.currentUser = null;
+                this.updateNavbar();
+                this.router('login');
+                this.showToast('Çıkış yapıldı.', 'success');
+            }
+
+            updateNavbar() {
+                const display = document.getElementById('user-display');
+                const logoutBtn = document.getElementById('logout-btn');
+                if (this.currentUser) {
+                    display.innerHTML = `<i class="fa-solid fa-circle-user"></i> ${this.currentUser.name}`;
+                    display.classList.remove('hidden');
+                    logoutBtn.classList.remove('hidden');
+                } else {
+                    display.classList.add('hidden');
+                    logoutBtn.classList.add('hidden');
+                }
+            }
+
+            // --- MÜŞTERİ PANELİ ---
+            loadUserDashboard() {
+                if (!this.currentUser) return;
+                
+                document.getElementById('user-car-detail').innerText = `${this.currentUser.plate} - ${this.currentUser.model}`;
+                
+                // QR Kod
+                const qrDiv = document.getElementById('qrcode');
+                qrDiv.innerHTML = '';
+                new QRCode(qrDiv, {
+                    text: `https://otoservispro.com?vin=${this.currentUser.vin}`,
+                    width: 90,
+                    height: 90
+                });
+
+                // Tablo
+                const myServices = this.db.services.filter(s => s.vin === this.currentUser.vin).reverse();
+                const tbody = document.getElementById('user-history-body');
+                tbody.innerHTML = '';
+
+                if (myServices.length === 0) {
+                    document.getElementById('user-empty-state').classList.remove('hidden');
+                } else {
+                    document.getElementById('user-empty-state').classList.add('hidden');
+                    myServices.forEach(s => {
+                        const master = this.db.masters.find(m => m.id === s.masterId);
+                        
+                        let btnHtml = '';
+                        if(s.isRated) {
+                            btnHtml = `<span class="status-badge status-completed"><i class="fa-solid fa-check"></i> ${s.rating} Puan</span>`;
+                        } else {
+                            btnHtml = `<button onclick="app.openRateModal('${s.id}')" class="btn btn-outline btn-sm">Puanla</button>`;
+                        }
+
+                        const tr = `
+                            <tr>
+                                <td>${this.formatDate(s.date)}</td>
+                                <td><strong>${master ? master.shopName : 'Servis'}</strong><br><small class="text-muted">${master ? master.name : ''}</small></td>
+                                <td><strong>${s.km} KM</strong><br>${s.desc}</td>
+                                <td>${btnHtml}</td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += tr;
+                    });
+                }
+            }
+
+            // --- USTA PANELİ ---
+            loadMasterDashboard() {
+                if (!this.currentUser) return;
+
+                document.getElementById('master-rating').innerText = this.currentUser.rating || '0.0';
+                document.getElementById('master-count').innerText = this.currentUser.ratingCount || '0';
+
+                const list = document.getElementById('master-recent-list');
+                list.innerHTML = '';
+                
+                const myWorks = this.db.services.filter(s => s.masterId === this.currentUser.id).reverse().slice(0, 5);
+                
+                if(myWorks.length === 0) list.innerHTML = '<li class="text-muted text-center">Henüz işlem yok.</li>';
+                
+                myWorks.forEach(w => {
+                    list.innerHTML += `
+                        <li style="padding:10px; border-bottom:1px solid #eee;">
+                            <div style="font-weight:bold;">${w.plate} <span style="float:right; font-weight:normal; font-size:0.8rem;">${this.formatDate(w.date)}</span></div>
+                            <div class="text-muted" style="font-size:0.9rem;">${w.desc}</div>
+                        </li>
+                    `;
+                });
+            }
+
+            checkPlate() {
+                const plate = document.getElementById('serv-plate').value.trim().toUpperCase();
+                const status = document.getElementById('plate-status');
+                
+                if(!plate) return;
+
+                const user = this.db.users.find(u => u.plate === plate);
+                if(user) {
+                    status.innerHTML = `<span style="color:green;"><i class="fa-solid fa-check"></i> ${user.model} (${user.name})</span>`;
+                    return user;
+                } else {
+                    status.innerHTML = `<span style="color:red;"><i class="fa-solid fa-xmark"></i> Araç bulunamadı!</span>`;
+                    return null;
+                }
+            }
+
+            addService(data) {
+                const user = this.db.users.find(u => u.plate === data.plate);
+                if (!user) {
+                    this.showToast('Geçerli bir araç bulunamadı.', 'error');
+                    return;
+                }
+
+                const newService = {
+                    id: 'srv_' + Date.now(),
+                    masterId: this.currentUser.id,
+                    vin: user.vin,
+                    plate: user.plate,
+                    km: data.km,
+                    date: data.date,
+                    desc: data.desc,
+                    isRated: false,
+                    rating: 0,
+                    comment: ''
+                };
+
+                this.db.services.push(newService);
+                this.saveDB(this.db);
+                this.showToast('İşlem kaydedildi.', 'success');
+                document.getElementById('service-add-form').reset();
+                document.getElementById('plate-status').innerHTML = '';
+                this.loadMasterDashboard();
+            }
+
+            // --- PUANLAMA ---
+            openRateModal(sid) {
+                this.tempSid = sid;
+                this.tempRating = 0;
+                document.getElementById('modal-rate').classList.remove('hidden');
+                document.querySelectorAll('.star-rating i').forEach(i => i.className = 'fa-regular fa-star');
+            }
+
+            closeModal() {
+                document.getElementById('modal-rate').classList.add('hidden');
+            }
+
+            submitRating() {
+                if(!this.tempRating) {
+                    this.showToast('Lütfen puan seçin.', 'error');
+                    return;
+                }
+                const comment = document.getElementById('rate-comment').value;
+                
+                const sIndex = this.db.services.findIndex(s => s.id === this.tempSid);
+                if(sIndex > -1) {
+                    this.db.services[sIndex].isRated = true;
+                    this.db.services[sIndex].rating = this.tempRating;
+                    this.db.services[sIndex].comment = comment;
+
+                    // Usta güncelle
+                    const mIndex = this.db.masters.findIndex(m => m.id === this.db.services[sIndex].masterId);
+                    if(mIndex > -1) {
+                        const m = this.db.masters[mIndex];
+                        const total = (m.rating * m.ratingCount) + this.tempRating;
+                        m.ratingCount++;
+                        m.rating = (total / m.ratingCount).toFixed(1);
+                    }
+                    this.saveDB(this.db);
+                    this.showToast('Puan gönderildi!', 'success');
+                    this.closeModal();
+                    this.loadUserDashboard();
+                }
+            }
+
+            // --- OLAY DİNLEYİCİLERİ ---
+            initEvents() {
+                // Giriş
+                document.getElementById('login-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.login(document.getElementById('login-id').value.trim(), document.getElementById('login-pass').value.trim());
+                });
+
+                // Kayıt
+                document.getElementById('register-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.register({
+                        name: document.getElementById('reg-name').value.trim(),
+                        tc: document.getElementById('reg-tc').value.trim(),
+                        password: document.getElementById('reg-pass').value.trim(),
+                        plate: document.getElementById('reg-plate').value.trim().toUpperCase(),
+                        vin: document.getElementById('reg-vin').value.trim().toUpperCase(),
+                        model: document.getElementById('reg-model').value.trim(),
+                    });
+                });
+
+                // Servis Ekle
+                const srvForm = document.getElementById('service-add-form');
+                if(srvForm) {
+                    srvForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.addService({
+                            plate: document.getElementById('serv-plate').value.trim().toUpperCase(),
+                            km: document.getElementById('serv-km').value,
+                            date: document.getElementById('serv-date').value,
+                            desc: document.getElementById('serv-desc').value
+                        });
+                    });
+                }
+
+                // Çıkış
+                document.getElementById('logout-btn').addEventListener('click', () => this.logout());
+
+                // Yıldızlar
+                document.querySelectorAll('.star-rating i').forEach(star => {
+                    star.addEventListener('click', (e) => {
+                        const val = parseInt(e.target.dataset.val);
+                        this.tempRating = val;
+                        document.querySelectorAll('.star-rating i').forEach(s => {
+                            s.className = parseInt(s.dataset.val) <= val ? 'fa-solid fa-star' : 'fa-regular fa-star';
+                        });
+                    });
+                });
+                
+                document.getElementById('btn-submit-rate').addEventListener('click', () => this.submitRating());
+            }
+
+            // Yardımcı
+            showToast(msg, type) {
+                const c = document.getElementById('toast-container');
+                const t = document.createElement('div');
+                t.className = `toast ${type}`;
+                t.innerHTML = type === 'success' ? `<i class="fa-solid fa-check-circle"></i> ${msg}` : `<i class="fa-solid fa-circle-exclamation"></i> ${msg}`;
+                c.appendChild(t);
+                setTimeout(() => t.remove(), 3000);
+            }
+
+            formatDate(d) {
+                return new Date(d).toLocaleDateString('tr-TR');
+            }
+        }
+
+        // Uygulamayı Başlat
+        const app = new App();
+    </script>
 </body>
 </html>
