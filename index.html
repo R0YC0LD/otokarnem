@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OtoServis Pro - Araç ve Servis Yönetimi</title>
+    <title>OtoServis Pro - Otokarnem</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -65,7 +65,7 @@
         .input-icon i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
         .input-icon input { padding-left: 45px; }
 
-        /* ROLE SELECTOR (YENİ) */
+        /* ROLE SELECTOR */
         .role-selector { display: flex; background: #f1f5f9; padding: 5px; border-radius: 12px; margin-bottom: 25px; }
         .role-option { flex: 1; text-align: center; padding: 10px; cursor: pointer; border-radius: 8px; font-weight: 600; color: var(--text-muted); transition: all 0.3s; }
         .role-option.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -121,6 +121,8 @@
         .star-rating { font-size: 2.5rem; color: #fbbf24; cursor: pointer; margin: 20px 0; display: flex; justify-content: center; gap: 5px; }
         .star-rating i { transition: transform 0.2s; }
         .star-rating i:hover { transform: scale(1.2); }
+        .status-badge { display: inline-block; }
+        .status-completed { background: #d1fae5; color: #059669; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 0.8rem; }
 
         #toast-container { position: fixed; top: 30px; right: 30px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
         .toast { background: #1e293b; color: white; padding: 16px 24px; border-radius: 12px; animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); min-width: 300px; }
@@ -396,48 +398,35 @@
         </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <script>
+        // --- FIREBASE AYARLARI ---
+        // Ekran görüntüsünden alınan bilgiler:
+        const firebaseConfig = {
+            apiKey: "AIzaSyDr9FvIh0OCHJOgc7ngylEtVkorz5ppvoE",
+            authDomain: "otokarnem-34.firebaseapp.com",
+            projectId: "otokarnem-34",
+            storageBucket: "otokarnem-34.firebasestorage.app",
+            messagingSenderId: "318817593336",
+            appId: "1:318817593336:web:59f39a9d66948a8ed7180d",
+            measurementId: "G-TXVSBNXCKQ"
+        };
+
+        // Firebase'i Başlat
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         class App {
             constructor() {
-                this.DB_KEY = 'otoServisPro_DB_v3'; // Versiyonu güncelledik
                 this.currentUser = null;
                 this.currentView = 'view-login';
-                this.db = this.loadDB();
                 
                 this.initEvents();
                 this.checkSession();
-            }
-
-            // --- VERİTABANI ---
-            loadDB() {
-                const stored = localStorage.getItem(this.DB_KEY);
-                if (stored) return JSON.parse(stored);
-                
-                // Varsayılan Veriler
-                const seedData = {
-                    users: [],
-                    masters: [
-                        { 
-                            id: 'm_1', 
-                            username: 'usta1', 
-                            password: '123', 
-                            name: 'Mehmet Usta', 
-                            shopName: 'Güven Oto Performans',
-                            rating: 4.5,
-                            ratingCount: 2
-                        }
-                    ],
-                    services: []
-                };
-                this.saveDB(seedData);
-                return seedData;
-            }
-
-            saveDB(data) {
-                localStorage.setItem(this.DB_KEY, JSON.stringify(data));
-                this.db = data;
             }
 
             // --- ROUTING ---
@@ -455,10 +444,8 @@
 
             // --- UI HELPERS ---
             setRegisterRole(role) {
-                // UI Güncelleme
                 document.querySelectorAll('.role-option').forEach(el => el.classList.remove('active'));
                 event.currentTarget.classList.add('active');
-                
                 document.getElementById('reg-role').value = role;
 
                 const carInfo = document.getElementById('section-car-info');
@@ -466,38 +453,32 @@
                 const tcGroup = document.getElementById('group-tc');
                 const userGroup = document.getElementById('group-username');
                 
-                // Gerekli alanları göster/gizle ve required özelliklerini yönet
                 if (role === 'master') {
                     carInfo.classList.add('hidden');
                     shopInfo.classList.remove('hidden');
-                    
                     tcGroup.classList.add('hidden');
                     userGroup.classList.remove('hidden');
-
+                    
                     document.getElementById('reg-plate').removeAttribute('required');
                     document.getElementById('reg-vin').removeAttribute('required');
                     document.getElementById('reg-tc').removeAttribute('required');
-                    
                     document.getElementById('reg-username').setAttribute('required', 'true');
                     document.getElementById('reg-shopname').setAttribute('required', 'true');
-
                 } else {
                     carInfo.classList.remove('hidden');
                     shopInfo.classList.add('hidden');
-                    
                     tcGroup.classList.remove('hidden');
                     userGroup.classList.add('hidden');
 
                     document.getElementById('reg-plate').setAttribute('required', 'true');
                     document.getElementById('reg-vin').setAttribute('required', 'true');
                     document.getElementById('reg-tc').setAttribute('required', 'true');
-                    
                     document.getElementById('reg-username').removeAttribute('required');
                     document.getElementById('reg-shopname').removeAttribute('required');
                 }
             }
 
-            // --- AUTH ---
+            // --- AUTH & DATABASE ---
             checkSession() {
                 const sessionUser = sessionStorage.getItem('currentUser');
                 if (sessionUser) {
@@ -513,77 +494,101 @@
                 }
             }
 
-            login(id, password) {
-                // Usta Kontrolü (Veritabanındaki masters dizisinden)
-                const master = this.db.masters.find(m => m.username === id && m.password === password);
-                if (master) {
-                    this.setSession(master, 'master');
-                    this.showToast(`Hoşgeldin ${master.name}`, 'success');
-                    return;
-                }
+            async login(id, password) {
+                this.showToast('Giriş yapılıyor...', 'info');
 
-                // Kullanıcı Kontrolü
-                const user = this.db.users.find(u => u.tc === id && u.password === password);
-                if (user) {
-                    this.setSession(user, 'user');
-                    this.showToast(`Hoşgeldin ${user.name}`, 'success');
-                    return;
-                }
+                try {
+                    // 1. Usta Kontrolü
+                    const mastersRef = db.collection('masters');
+                    const masterQuery = await mastersRef.where('username', '==', id).where('password', '==', password).get();
 
-                this.showToast('Hatalı kullanıcı adı/TC veya şifre!', 'error');
+                    if (!masterQuery.empty) {
+                        const masterData = masterQuery.docs[0].data();
+                        this.setSession(masterData, 'master');
+                        this.showToast(`Hoşgeldin ${masterData.name}`, 'success');
+                        return;
+                    }
+
+                    // 2. Kullanıcı Kontrolü
+                    const usersRef = db.collection('users');
+                    const userQuery = await usersRef.where('tc', '==', id).where('password', '==', password).get();
+
+                    if (!userQuery.empty) {
+                        const userData = userQuery.docs[0].data();
+                        this.setSession(userData, 'user');
+                        this.showToast(`Hoşgeldin ${userData.name}`, 'success');
+                        return;
+                    }
+
+                    this.showToast('Hatalı kullanıcı adı/TC veya şifre!', 'error');
+
+                } catch (error) {
+                    console.error("Giriş hatası:", error);
+                    this.showToast('Bağlantı hatası: ' + error.message, 'error');
+                }
             }
 
-            register(e) {
+            async register(e) {
                 e.preventDefault();
                 const role = document.getElementById('reg-role').value;
                 const name = document.getElementById('reg-name').value.trim();
                 const pass = document.getElementById('reg-pass').value.trim();
 
-                if(role === 'user') {
-                    const tc = document.getElementById('reg-tc').value.trim();
-                    const plate = document.getElementById('reg-plate').value.trim().toUpperCase();
-                    
-                    if(this.db.users.find(u => u.tc === tc)) return this.showToast('Bu TC zaten kayıtlı!', 'error');
-                    if(this.db.users.find(u => u.plate === plate)) return this.showToast('Bu plaka zaten kayıtlı!', 'error');
+                this.showToast('Kayıt oluşturuluyor...', 'info');
 
-                    const newUser = {
-                        id: 'u_' + Date.now(),
-                        role: 'user',
-                        name: name,
-                        tc: tc,
-                        password: pass,
-                        plate: plate,
-                        vin: document.getElementById('reg-vin').value.trim().toUpperCase(),
-                        model: document.getElementById('reg-model').value.trim()
-                    };
+                try {
+                    if(role === 'user') {
+                        const tc = document.getElementById('reg-tc').value.trim();
+                        const plate = document.getElementById('reg-plate').value.trim().toUpperCase();
+                        
+                        const checkTC = await db.collection('users').where('tc', '==', tc).get();
+                        if(!checkTC.empty) return this.showToast('Bu TC zaten kayıtlı!', 'error');
 
-                    this.db.users.push(newUser);
-                    this.saveDB(this.db);
-                    this.showToast('Kayıt Başarılı!', 'success');
-                    setTimeout(() => this.setSession(newUser, 'user'), 1000);
+                        const checkPlate = await db.collection('users').where('plate', '==', plate).get();
+                        if(!checkPlate.empty) return this.showToast('Bu plaka zaten kayıtlı!', 'error');
 
-                } else if (role === 'master') {
-                    const username = document.getElementById('reg-username').value.trim();
-                    const shopname = document.getElementById('reg-shopname').value.trim();
-                    
-                    if(this.db.masters.find(m => m.username === username)) return this.showToast('Bu kullanıcı adı dolu!', 'error');
+                        const newUser = {
+                            id: 'u_' + Date.now(),
+                            role: 'user',
+                            name: name,
+                            tc: tc,
+                            password: pass,
+                            plate: plate,
+                            vin: document.getElementById('reg-vin').value.trim().toUpperCase(),
+                            model: document.getElementById('reg-model').value.trim(),
+                            createdAt: new Date().toISOString()
+                        };
 
-                    const newMaster = {
-                        id: 'm_' + Date.now(),
-                        role: 'master',
-                        username: username,
-                        password: pass,
-                        name: name,
-                        shopName: shopname,
-                        phone: document.getElementById('reg-phone').value.trim(),
-                        rating: 0,
-                        ratingCount: 0
-                    };
+                        await db.collection('users').doc(newUser.id).set(newUser);
+                        this.showToast('Kayıt Başarılı!', 'success');
+                        setTimeout(() => this.setSession(newUser, 'user'), 1000);
 
-                    this.db.masters.push(newMaster);
-                    this.saveDB(this.db);
-                    this.showToast('Usta Kaydı Başarılı!', 'success');
-                    setTimeout(() => this.setSession(newMaster, 'master'), 1000);
+                    } else if (role === 'master') {
+                        const username = document.getElementById('reg-username').value.trim();
+                        
+                        const checkUser = await db.collection('masters').where('username', '==', username).get();
+                        if(!checkUser.empty) return this.showToast('Bu kullanıcı adı dolu!', 'error');
+
+                        const newMaster = {
+                            id: 'm_' + Date.now(),
+                            role: 'master',
+                            username: username,
+                            password: pass,
+                            name: name,
+                            shopName: document.getElementById('reg-shopname').value.trim(),
+                            phone: document.getElementById('reg-phone').value.trim(),
+                            rating: 0,
+                            ratingCount: 0,
+                            createdAt: new Date().toISOString()
+                        };
+
+                        await db.collection('masters').doc(newMaster.id).set(newMaster);
+                        this.showToast('Usta Kaydı Başarılı!', 'success');
+                        setTimeout(() => this.setSession(newMaster, 'master'), 1000);
+                    }
+                } catch (error) {
+                    console.error("Kayıt hatası:", error);
+                    this.showToast('Kayıt sırasında hata oluştu.', 'error');
                 }
             }
 
@@ -619,7 +624,7 @@
             }
 
             // --- USER DASHBOARD ---
-            loadUserDashboard() {
+            async loadUserDashboard() {
                 if (!this.currentUser) return;
                 
                 document.getElementById('user-car-detail').innerText = `${this.currentUser.plate} - ${this.currentUser.model}`;
@@ -627,22 +632,40 @@
                 const qrDiv = document.getElementById('qrcode');
                 qrDiv.innerHTML = '';
                 new QRCode(qrDiv, {
-                    text: `https://otoservispro.com?vin=${this.currentUser.vin}`,
+                    text: `https://otokarnem-34.web.app?vin=${this.currentUser.vin}`, // Proje ID'sine göre güncellendi
                     width: 100,
                     height: 100
                 });
 
-                const myServices = this.db.services.filter(s => s.vin === this.currentUser.vin).reverse();
                 const tbody = document.getElementById('user-history-body');
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">Yükleniyor...</td></tr>';
+
+                const servicesRef = db.collection('services');
+                const snapshot = await servicesRef.where('vin', '==', this.currentUser.vin).get();
+                
                 tbody.innerHTML = '';
 
-                if (myServices.length === 0) {
+                if (snapshot.empty) {
                     document.getElementById('user-empty-state').classList.remove('hidden');
                 } else {
                     document.getElementById('user-empty-state').classList.add('hidden');
-                    myServices.forEach(s => {
-                        const master = this.db.masters.find(m => m.id === s.masterId);
+                    
+                    let services = [];
+                    snapshot.forEach(doc => services.push(doc.data()));
+                    services.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                    for (const s of services) {
+                        let masterName = 'Bilinmeyen Servis';
+                        let masterPerson = '';
                         
+                        try {
+                            const masterDoc = await db.collection('masters').doc(s.masterId).get();
+                            if(masterDoc.exists) {
+                                masterName = masterDoc.data().shopName;
+                                masterPerson = masterDoc.data().name;
+                            }
+                        } catch(e) {}
+
                         let btnHtml = '';
                         if(s.isRated) {
                             btnHtml = `<span class="status-badge status-completed"><i class="fa-solid fa-check"></i> ${s.rating} Puan</span>`;
@@ -654,8 +677,8 @@
                             <tr>
                                 <td><div style="font-weight:600;">${this.formatDate(s.date)}</div></td>
                                 <td>
-                                    <div style="font-weight:700; color:var(--primary);">${master ? master.shopName : 'Bilinmeyen Servis'}</div>
-                                    <small class="text-muted">${master ? master.name : ''}</small>
+                                    <div style="font-weight:700; color:var(--primary);">${masterName}</div>
+                                    <small class="text-muted">${masterPerson}</small>
                                 </td>
                                 <td>
                                     <div style="font-weight:700;">${s.km} KM</div>
@@ -665,49 +688,59 @@
                             </tr>
                         `;
                         tbody.innerHTML += tr;
-                    });
+                    }
                 }
             }
 
             // --- MASTER DASHBOARD ---
-            loadMasterDashboard() {
+            async loadMasterDashboard() {
                 if (!this.currentUser) return;
                 
                 document.getElementById('master-header-name').innerText = this.currentUser.shopName;
                 document.getElementById('master-rating').innerText = this.currentUser.rating || '0.0';
                 
-                // Toplam işlem sayısını hesapla
-                const myWorks = this.db.services.filter(s => s.masterId === this.currentUser.id);
-                document.getElementById('master-count').innerText = myWorks.length;
-
                 const list = document.getElementById('master-recent-list');
+                list.innerHTML = '<li class="text-center p-3">Yükleniyor...</li>';
+
+                const servicesRef = db.collection('services');
+                const snapshot = await servicesRef.where('masterId', '==', this.currentUser.id).get();
+
+                document.getElementById('master-count').innerText = snapshot.size;
                 list.innerHTML = '';
+
+                let myWorks = [];
+                snapshot.forEach(doc => myWorks.push(doc.data()));
                 
-                const recentWorks = [...myWorks].reverse().slice(0, 5);
+                const recentWorks = myWorks.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
                 
-                if(recentWorks.length === 0) list.innerHTML = '<li class="text-muted text-center" style="padding:20px;">Henüz işlem kaydı yok.</li>';
-                
-                recentWorks.forEach(w => {
-                    list.innerHTML += `
-                        <li style="padding:15px; border-bottom:1px solid #f1f5f9;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <span style="font-weight:800; color:var(--text-main); font-size:1.1rem;">${w.plate}</span>
-                                <span class="text-muted" style="font-size:0.85rem;">${this.formatDate(w.date)}</span>
-                            </div>
-                            <div class="text-muted" style="font-size:0.9rem;">${w.desc.substring(0, 50)}${w.desc.length>50?'...':''}</div>
-                        </li>
-                    `;
-                });
+                if(recentWorks.length === 0) {
+                    list.innerHTML = '<li class="text-muted text-center" style="padding:20px;">Henüz işlem kaydı yok.</li>';
+                } else {
+                    recentWorks.forEach(w => {
+                        list.innerHTML += `
+                            <li style="padding:15px; border-bottom:1px solid #f1f5f9;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                                    <span style="font-weight:800; color:var(--text-main); font-size:1.1rem;">${w.plate}</span>
+                                    <span class="text-muted" style="font-size:0.85rem;">${this.formatDate(w.date)}</span>
+                                </div>
+                                <div class="text-muted" style="font-size:0.9rem;">${w.desc.substring(0, 50)}${w.desc.length>50?'...':''}</div>
+                            </li>
+                        `;
+                    });
+                }
             }
 
-            checkPlate() {
+            async checkPlate() {
                 const plate = document.getElementById('serv-plate').value.trim().toUpperCase();
                 const status = document.getElementById('plate-status');
                 
                 if(!plate) return;
+                status.innerText = "Aranıyor...";
 
-                const user = this.db.users.find(u => u.plate === plate);
-                if(user) {
+                const userQuery = await db.collection('users').where('plate', '==', plate).get();
+                
+                if(!userQuery.empty) {
+                    const user = userQuery.docs[0].data();
                     status.innerHTML = `<span style="color:var(--success);"><i class="fa-solid fa-circle-check"></i> ${user.model} (${user.name})</span>`;
                     return user;
                 } else {
@@ -716,12 +749,14 @@
                 }
             }
 
-            addService(e) {
+            async addService(e) {
                 e.preventDefault();
                 const plate = document.getElementById('serv-plate').value.trim().toUpperCase();
-                const user = this.db.users.find(u => u.plate === plate);
                 
-                if (!user) return this.showToast('Geçerli bir araç bulunamadı.', 'error');
+                const userQuery = await db.collection('users').where('plate', '==', plate).get();
+                
+                if (userQuery.empty) return this.showToast('Geçerli bir araç bulunamadı.', 'error');
+                const user = userQuery.docs[0].data();
 
                 const newService = {
                     id: 'srv_' + Date.now(),
@@ -736,11 +771,9 @@
                     comment: ''
                 };
 
-                this.db.services.push(newService);
-                this.saveDB(this.db);
+                await db.collection('services').doc(newService.id).set(newService);
                 this.showToast('İşlem Başarıyla Kaydedildi!', 'success');
                 
-                // Formu Temizle
                 document.getElementById('service-add-form').reset();
                 document.getElementById('plate-status').innerHTML = '';
                 this.loadMasterDashboard();
@@ -758,24 +791,38 @@
                 document.getElementById('modal-rate').classList.add('hidden');
             }
 
-            submitRating() {
+            async submitRating() {
                 if(!this.tempRating) return this.showToast('Lütfen puan seçin.', 'error');
                 
-                const sIndex = this.db.services.findIndex(s => s.id === this.tempSid);
-                if(sIndex > -1) {
-                    this.db.services[sIndex].isRated = true;
-                    this.db.services[sIndex].rating = this.tempRating;
-                    this.db.services[sIndex].comment = document.getElementById('rate-comment').value;
+                const serviceRef = db.collection('services').doc(this.tempSid);
+                const serviceDoc = await serviceRef.get();
+                
+                if(serviceDoc.exists) {
+                    const serviceData = serviceDoc.data();
 
-                    // Usta Puanını Güncelle
-                    const mIndex = this.db.masters.findIndex(m => m.id === this.db.services[sIndex].masterId);
-                    if(mIndex > -1) {
-                        const m = this.db.masters[mIndex];
-                        const total = (m.rating * m.ratingCount) + this.tempRating;
-                        m.ratingCount++;
-                        m.rating = (total / m.ratingCount).toFixed(1);
-                    }
-                    this.saveDB(this.db);
+                    await serviceRef.update({
+                        isRated: true,
+                        rating: this.tempRating,
+                        comment: document.getElementById('rate-comment').value
+                    });
+
+                    const masterRef = db.collection('masters').doc(serviceData.masterId);
+                    
+                    await db.runTransaction(async (transaction) => {
+                        const mDoc = await transaction.get(masterRef);
+                        if (!mDoc.exists) return;
+                        
+                        const mData = mDoc.data();
+                        const newCount = (mData.ratingCount || 0) + 1;
+                        const currentTotal = (mData.rating || 0) * (mData.ratingCount || 0);
+                        const newRating = ((currentTotal + this.tempRating) / newCount).toFixed(1);
+
+                        transaction.update(masterRef, {
+                            rating: parseFloat(newRating),
+                            ratingCount: newCount
+                        });
+                    });
+
                     this.showToast('Puanınız Ulaşmıştır, Teşekkürler!', 'success');
                     this.closeModal();
                     this.loadUserDashboard();
