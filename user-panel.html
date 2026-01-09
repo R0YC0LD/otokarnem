@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Aracım - Oto Karne</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <span class="navbar-brand">Kullanıcı Paneli</span>
+            <button onclick="logout()" class="btn btn-sm btn-light">Çıkış</button>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="card bg-light border-primary mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 id="carModel">Yükleniyor...</h3>
+                        <p class="mb-0">Plaka: <strong id="carPlate">-</strong> | Şasi: <span id="carVin">-</span></p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-outline-primary btn-sm mt-2" onclick="alert('QR Kod özelliği script.js entegrasyonu ile aktifleşir.')"><i class="fas fa-qrcode"></i> QR Kodum</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="mb-3">Servis Geçmişim & Değerlendirmeler</h4>
+        <div id="serviceList">
+            </div>
+    </div>
+
+    <div class="modal fade" id="rateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Hizmeti Değerlendir</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Hizmet Veren: <strong id="modalMasterName"></strong></p>
+                    <div class="mb-3 text-center">
+                        <label class="form-label">Puanınız:</label>
+                        <select id="rateScore" class="form-select w-50 mx-auto">
+                            <option value="5">⭐⭐⭐⭐⭐ - Mükemmel</option>
+                            <option value="4">⭐⭐⭐⭐ - İyi</option>
+                            <option value="3">⭐⭐⭐ - Orta</option>
+                            <option value="2">⭐⭐ - Kötü</option>
+                            <option value="1">⭐ - Çok Kötü</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Yorumunuz:</label>
+                        <textarea id="rateComment" class="form-control" rows="3" placeholder="Deneyiminizi diğer kullanıcılarla paylaşın..."></textarea>
+                    </div>
+                    <input type="hidden" id="modalServiceId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="submitRating()">Yorumu Gönder</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        const currentUser = checkAuth('user');
+        
+        // Araç Bilgilerini Doldur
+        document.getElementById('carModel').innerText = currentUser.car.model;
+        document.getElementById('carPlate').innerText = currentUser.car.plate;
+        document.getElementById('carVin').innerText = currentUser.car.vin;
+
+        // Geçmişi Listele
+        function loadHistory() {
+            const db = getDB();
+            const myServices = db.services.filter(s => s.vin === currentUser.car.vin);
+            const container = document.getElementById('serviceList');
+            
+            container.innerHTML = "";
+            
+            if (myServices.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">Henüz kayıtlı işlem yok.</div>';
+                return;
+            }
+
+            myServices.forEach(s => {
+                // Eğer puanlanmışsa yorumu göster, değilse butonu göster
+                let ratingArea = '';
+                if (s.rated) {
+                    ratingArea = `
+                        <div class="bg-white p-2 border rounded mt-2">
+                            <small class="text-muted">Senin Yorumun:</small><br>
+                            ${getStarHTML(s.ratingScore)} <br> 
+                            <i>"${s.comment}"</i>
+                        </div>
+                    `;
+                } else {
+                    ratingArea = `
+                        <button onclick="openRateModal(${s.id}, '${s.masterName}')" class="btn btn-warning btn-sm mt-2">
+                            <i class="far fa-star"></i> Hizmeti Puanla
+                        </button>
+                    `;
+                }
+
+                const html = `
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title text-primary">${s.shopName} (${s.masterName})</h5>
+                                <span class="badge bg-secondary">${formatDate(s.date)}</span>
+                            </div>
+                            <p class="card-text"><strong>${s.km} KM:</strong> ${s.desc}</p>
+                            ${ratingArea}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        // Puanlama Modalını Aç
+        let rateModal;
+        function openRateModal(serviceId, masterName) {
+            document.getElementById('modalServiceId').value = serviceId;
+            document.getElementById('modalMasterName').innerText = masterName;
+            rateModal = new bootstrap.Modal(document.getElementById('rateModal'));
+            rateModal.show();
+        }
+
+        // Puanı Kaydet
+        function submitRating() {
+            const db = getDB();
+            const serviceId = Number(document.getElementById('modalServiceId').value);
+            const score = Number(document.getElementById('rateScore').value);
+            const comment = document.getElementById('rateComment').value;
+
+            // Servisi bul ve güncelle
+            const serviceIndex = db.services.findIndex(s => s.id === serviceId);
+            if (serviceIndex > -1) {
+                db.services[serviceIndex].rated = true;
+                db.services[serviceIndex].ratingScore = score;
+                db.services[serviceIndex].comment = comment;
+
+                // Ustanın genel puanını güncelle
+                const masterIndex = db.masters.findIndex(m => m.id === db.services[serviceIndex].masterId);
+                if (masterIndex > -1) {
+                    let m = db.masters[masterIndex];
+                    // Basit ortalama hesabı
+                    let totalScore = (m.rating * m.reviewCount) + score;
+                    m.reviewCount++;
+                    m.rating = (totalScore / m.reviewCount).toFixed(1);
+                }
+
+                saveDB(db);
+                alert("Yorumunuz için teşekkürler!");
+                rateModal.hide();
+                loadHistory(); // Listeyi yenile
+            }
+        }
+
+        loadHistory();
+    </script>
+</body>
+</html>
