@@ -1,0 +1,25 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* Maskeleme efekti */
+.masked-text {
+    filter: blur(4px);
+    user-select: none;
+}
+
+/* Tablo Başlıkları */
+thead {
+    background-color: #e9ecef;
+}
